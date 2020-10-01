@@ -14,7 +14,12 @@ def verify_token(token):
     return AUTH_TOKEN is not None and token == AUTH_TOKEN
 
 
-@app.route("/", methods=["POST"])
+@app.route("/")
+def index():
+    return "<p>v1</p>"
+
+
+@app.route("/v1/", methods=["POST"])
 @auth.login_required
 def check():
     if not request.is_json:
