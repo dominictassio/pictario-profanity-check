@@ -17,45 +17,24 @@ def verify_token(token):
 
 @app.route("/")
 def index():
-    return {
-        "api_version": "v1"
-    }
+    return {"api_version": "v1"}
 
 
 @app.route("/v1/censor/", methods=["POST"])
+@app.route("/v1/is-profane/", methods=["POST"])
 @auth.login_required
 def censor():
     if request.content_type != "text/plain":
         abort(400)
-    
+
     data = request.get_data(as_text=True)
-    result = pfilter.censor(data)
-    response = make_response(str(result))
-    response.mimetype = "text/plain"
 
-    return response
+    if "censor" in request.path:
+        result = pfilter.censor(data)
 
+    if "is-profane" in request.path:
+        result = pfilter.is_profane(data)
 
-@app.route("/v1/is-profane/", methods=["POST"])
-@auth.login_required
-def is_profane():
-    if request.content_type != "text/plain":
-        abort(400)
-    
-    data = request.get_data(as_text=True)
-    result = pfilter.is_profane(data)
-    response = make_response(str(result))
-    response.mimetype = "text/plain"
-
-    return response
-
-
-def handle_method(method):
-    if request.content_type != "text/plain":
-        abort(400)
-    
-    data = request.get_data(as_text=True)
-    result = method(data)
     response = make_response(str(result))
     response.mimetype = "text/plain"
 
