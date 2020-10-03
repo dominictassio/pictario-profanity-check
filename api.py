@@ -7,7 +7,7 @@ from flask_httpauth import HTTPTokenAuth
 app = Flask("pictario-profanity-check")
 auth = HTTPTokenAuth(scheme="Bearer")
 AUTH_TOKEN = os.environ["TOKEN"]
-pfilter = ProfanityFilter()
+pfilter = ProfanityFilter(languages=["en_core_web_sm"])
 
 
 @auth.verify_token
@@ -25,13 +25,29 @@ def index():
 @app.route("/v1/censor/", methods=["POST"])
 @auth.login_required
 def censor():
-    return handle_method(pfilter.censor)
+    if request.content_type != "text/plain":
+        abort(400)
+    
+    data = request.get_data(as_text=True)
+    result = pfilter.censor(data)
+    response = make_response(str(result))
+    response.mimetype = "text/plain"
+
+    return response
 
 
 @app.route("/v1/is-profane/", methods=["POST"])
 @auth.login_required
 def is_profane():
-    return handle_method(pfilter.is_profane)
+    if request.content_type != "text/plain":
+        abort(400)
+    
+    data = request.get_data(as_text=True)
+    result = pfilter.is_profane(data)
+    response = make_response(str(result))
+    response.mimetype = "text/plain"
+
+    return response
 
 
 def handle_method(method):
